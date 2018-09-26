@@ -22,7 +22,7 @@ filters = [{"can_id": 0x021F, "can_mask": 0xFFFF, "extended": False},{"can_id": 
 
 def MainMenu():
     print("1. Test a signal")
-    print("2. Map signal")
+    print("2. Signal Listener")
     print("q. Quit")
 
 def set_manubrio(can_bus):
@@ -76,8 +76,7 @@ if __name__ == "__main__":
                 bus.send(pack)
                 print(pack)
                 sleep(timeout_STATUS_NVO)
-        elif command =='2':
-            print('Monitor')
+        elif command == '2':
             # listner_buttons = Listener(bus, id=0x3C4, dlc=8)
             listener_touchpad= Listener(bus, id=0x21F, dlc=8)
             sleep(2)
