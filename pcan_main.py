@@ -1,28 +1,26 @@
 import can
-from can import Message
 from utils import *
-from pypl import ArtPyPlCommand, ArtPyPlClient, CanMessage
-from threading import Thread, Lock
-import signal, sys, time, struct
+from threading import Thread
 from time import sleep
-import datetime     # Used for time e date
 from messages_db import *
 
-##
-## TODO: Implement the notifier in order to connect all received signals to propper actions
-##       Further we can also use can.recv(timeout=None) in order to block and get first packets
-##
-
-##
-## TODO: Implement Listeners if needed
-##
-
-# Filters
-filters = [{"can_id": 0x021F, "can_mask": 0xFFFF, "extended": False},{"can_id": 0x03C4, "can_mask": 0xFFFF, "extended": False}]
 
 def MainMenu():
-    print("1. Test a signal")
-    print("2. Signal Listener")
+    print("c.   Press Comfort button")
+    print("b.   Press Back_MainMenu")
+    print("m.   Change Manettino")
+    print("s.   Press Source Button")
+    print("mw.  Set Driver Wish")
+    print("v.   Press Voice Recognition")
+    print("d.   Press Declutter")
+    print("p.   Press Phone Call button")
+    print('lb   Long press on Back_MainMenu')
+    print("SL.  Scroll Left")
+    print("SR.  Scroll Right")
+    print("SU.  Scroll Up")
+    print("SD.  Scroll Down")
+    print("PC.  Press Center\r\n")
+    print("l. Signal Listener")
     print("q. Quit")
 
 def set_manubrio(can_bus):
@@ -42,11 +40,6 @@ def set_manubrio(can_bus):
 
 
 if __name__ == "__main__":
-    lock = Lock()
-    payload_STATUS_NVO = bytearray(8)
-    timeout_STATUS_NVO = 1
-    payload_TOUCHPAD = bytearray(8)
-    timeout_TOUCHPAD = 0.050
     GO_thread = True
     change_key_sts = False
     key_sts = 4 # ON
@@ -69,14 +62,50 @@ if __name__ == "__main__":
         if command == 'q':
             print('Exit...')
             break
-        elif command == '1':
-            print('Press confort')
-            for i in [0, 1, 0]:
-                pack = press_confort_button(payload_STATUS_NVO, i)
-                bus.send(pack)
-                print(pack)
-                sleep(timeout_STATUS_NVO)
-        elif command == '2':
+        elif command == 'c':
+            print('Pressing confort')
+            comfort(bus)
+        elif command == 'b':
+            print('Pressing back button')
+            back(bus)
+        elif command == 'm':
+            print('Setting Manettino')
+            for i in [3,1,2,3,4,5,3]:
+                manettino(bus, i)
+        elif command == 's':
+            print("Prssing Source Button")
+            source(bus)
+        elif command == 'mw':
+            print('Setting manettino wish')
+            for i in [0,1,2,3,4,0]:
+                driver_wish(bus, i)
+        elif command == 'v':
+            print("Pressing voice recognition")
+            voice(bus)
+        elif command == 'd':
+            print('Pressing declutter')
+            declutter(bus)
+        elif command == 'p':
+            print('Pressing phone call')
+            phone(bus)
+        elif command == 'lb':
+            print('Long press back')
+            long_press_menu(bus)
+        elif command == 'SL':
+            print('Scroll left')
+            scroll_left(bus)
+        elif command == 'SR':
+            print('Scroll right')
+            scroll_right(bus)
+        elif command == 'SU':
+            scroll_up(bus)
+        elif command == 'SD':
+            scroll_down(bus)
+        elif command == 'PC':
+            press_center(bus)
+
+
+        elif command == 'l':
             # listner_buttons = Listener(bus, id=0x3C4, dlc=8)
             listener_touchpad= Listener(bus, id=0x21F, dlc=8)
             sleep(2)

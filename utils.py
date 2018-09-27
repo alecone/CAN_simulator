@@ -1,7 +1,7 @@
 import can
 import threading
 import logging
-import time
+from time import sleep
 from messages_db import *
 
 
@@ -46,7 +46,7 @@ class Listener(object):
                 if msg is not None:
                     self.on_message_received(msg)
                 msg = bus.recv(.1)
-                time.sleep(0.050)
+                sleep(0.050)
         except:
             BusError('Cannot receivemessages from bus')
 
@@ -107,4 +107,150 @@ def press_phone_call_button(original_payload, val=0):
 
 
 ''' Functions that emulate touchpad gesture'''
-## TODO: try to make a function that map postion
+
+def set_touchpad(original_payload, xval=0, yval=0, push=0, gesture_step=0, gest_type=0):
+    compose_NVO_STATUS_TOUCHPAD(original_payload, Xposition=0, Yposition=0, FingerPresent=1, GestureType=0)
+    compose_NVO_STATUS_TOUCHPAD(original_payload, Xposition=xval, Yposition=yval, FingerPresent=1, GestureStep=gesture_step, Push=push, GestureType=gest_type)
+    return can_pack(BH['NVO_STATUS_TOUCH'][0], BH['NVO_STATUS_TOUCH'][1], original_payload)
+
+'''      FUNCTIONS THAT HAVE TO BE CALLED FOR GESTURES      '''
+
+def comfort(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_confort_button(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def back(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_back_main(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def manettino(can_bus, val):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    pack = change_manettino(payload_STATUS_NVO, i)
+    can_bus.send(pack)
+    sleep(timeout_STATUS_NVO)
+
+def source(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_source_button(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def driver_wish(can_bus, val):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    pack = set_HManettinoDriverWish(payload_STATUS_NVO, i)
+    can_bus.send(pack)
+    sleep(timeout_STATUS_NVO)
+
+def voice(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_voice_recognition(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def declutter(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_declatter(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def phone(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 0]:
+        pack = press_phone_call_button(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def long_press_menu(can_bus):
+    payload_STATUS_NVO = bytearray(8)
+    timeout_STATUS_NVO = 1
+    for i in [0, 1, 1, 1, 1, 1, 0]:
+        pack = press_back_main(payload_STATUS_NVO, i)
+        can_bus.send(pack)
+        sleep(timeout_STATUS_NVO)
+
+def scroll_left(can_bus):
+    payload_TOUCHPAD = bytearray(8)
+    timeout_TOUCHPAD = 0.050
+    x_tick = int(512/10)
+    y_const = int(512/2)
+    g_type = 0
+    g_step = 0
+    for i in [10,9,8,7,6,5,4,3,2,1]:
+        if i == 6:
+            g_type = 3
+            g_step = 1
+        pack = set_touchpad(payload_TOUCHPAD, xval=x_tick*i, yval=y_const, push=0, gesture_step=g_step, gest_type=g_type)
+        can_bus.send(pack)
+        sleep(timeout_TOUCHPAD)
+
+def scroll_right(can_bus):
+    payload_TOUCHPAD = bytearray(8)
+    timeout_TOUCHPAD = 0.050
+    x_tick = int(512/10)
+    y_const = int(512/2)
+    g_type = 0
+    g_step = 0
+    for i in [1,2,3,4,5,6,7,8,9,10]:
+        if i == 5:
+            g_type = 4
+            g_step = 1
+        pack = set_touchpad(payload_TOUCHPAD, xval=x_tick*i, yval=y_const, push=0, gesture_step=g_step, gest_type=g_type)
+        can_bus.send(pack)
+        sleep(timeout_TOUCHPAD)
+
+def scroll_up(can_bus):
+    payload_TOUCHPAD = bytearray(8)
+    timeout_TOUCHPAD = 0.050
+    y_tick = int(512/10)
+    x_const = int(512/2)
+    g_type = 0
+    g_step = 0
+    for i in [1,2,3,4,5,6,7,8,9,10]:
+        if i == 5:
+            g_type = 1
+            g_step = 1
+        pack = set_touchpad(payload_TOUCHPAD, xval=x_const, yval=y_tick*i, push=0, gesture_step=g_step, gest_type=g_type)
+        can_bus.send(pack)
+        sleep(timeout_TOUCHPAD)
+
+def scroll_down(can_bus):
+    payload_TOUCHPAD = bytearray(8)
+    timeout_TOUCHPAD = 0.050
+    y_tick = int(512/10)
+    x_const = int(512/2)
+    g_type = 0
+    g_step = 0
+    for i in [10,9,8,7,6,5,4,3,2,1]:
+        if i == 6:
+            g_type = 2
+            g_step = 1
+        pack = set_touchpad(payload_TOUCHPAD, xval=x_const, yval=y_tick*i, push=0, gesture_step=g_step, gest_type=g_type)
+        can_bus.send(pack)
+        sleep(timeout_TOUCHPAD)
+
+def press_center(can_bus):
+    payload_TOUCHPAD = bytearray(8)
+    timeout_TOUCHPAD = 0.050
+    y_const = int(512/2)
+    x_const = int(512/2)
+    for i in range(10):
+        pack = set_touchpad(payload_TOUCHPAD, xval=x_const, yval=y_const, push=1, gesture_step=0, gest_type=0)
+        can_bus.send(pack)
+        sleep(timeout_TOUCHPAD)
